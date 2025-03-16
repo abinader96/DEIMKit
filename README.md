@@ -147,7 +147,7 @@ conf = Config.from_model_name("deim_hgnetv2_s")
 
 conf = configure_dataset(
     config=conf,
-    image_size=[640, 640],
+    image_size=(640, 640),
     train_ann_file="dataset/PCB Holes.v4i.coco/train/_annotations.coco.json",
     train_img_folder="dataset/PCB Holes.v4i.coco/train",
     val_ann_file="dataset/PCB Holes.v4i.coco/valid/_annotations.coco.json",

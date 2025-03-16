@@ -59,7 +59,7 @@ def configure_dataset(
     train_img_folder: str,
     val_ann_file: str,
     val_img_folder: str,
-    image_size: List[int] = [640, 640],
+    image_size: tuple[int, int] = (640, 640),
     train_batch_size: int = 16,
     val_batch_size: int = 16,
     num_classes: int = None,
