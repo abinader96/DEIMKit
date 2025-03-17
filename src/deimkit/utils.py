@@ -3,8 +3,16 @@ import os
 import torch
 from loguru import logger
 
-def save_only_ema_weights(checkpoint_file: str) -> None:
-    """Extract and save only the EMA weights."""
+def save_only_ema_weights(checkpoint_file: str) -> str:
+    """
+    Extract and save only the EMA weights.
+
+    Args:
+        checkpoint_file: Path to the checkpoint file
+
+    Returns:
+        Path to the saved EMA weights file
+    """
     logger.info(f"Loading checkpoint from {checkpoint_file}")
     checkpoint = torch.load(checkpoint_file, map_location="cpu")
 
@@ -21,3 +29,5 @@ def save_only_ema_weights(checkpoint_file: str) -> None:
 
     torch.save(weights, output_file)
     logger.info(f"EMA weights saved to {output_file}")
+
+    return output_file

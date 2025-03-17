@@ -10,6 +10,8 @@ import torchvision.transforms as T
 from loguru import logger
 from PIL import Image
 
+from deimkit.utils import save_only_ema_weights
+
 from .config import Config
 from .visualization import draw_on_image
 
@@ -41,7 +43,7 @@ class PredictionResult:
 @dataclass
 class ModelConfig:
     """Configuration for model inference"""
-    
+
     image_size: Tuple[int, int] = DEFAULT_IMAGE_SIZE
     mean: List[float] = field(default_factory=lambda: DEFAULT_MEAN)
     std: List[float] = field(default_factory=lambda: DEFAULT_STD)
@@ -67,6 +69,7 @@ def load_model(
     checkpoint: Optional[str] = None,
     class_names: Optional[List[str]] = None,
     image_size: Optional[Tuple[int, int]] = None,
+    ema_weights: bool = True,
 ) -> "Predictor":
     """Load a DEIM model
 
@@ -77,10 +80,17 @@ def load_model(
         checkpoint: Optional path to a custom checkpoint file
         class_names: Optional list of class names for the model
         image_size: Optional custom image size for inference (width, height)
+        ema_weights: Whether to load the EMA weights
 
     Returns:
         Initialized Predictor object
     """
+    if ema_weights:
+        logger.info("Loading EMA weights")
+        checkpoint = save_only_ema_weights(checkpoint)
+    else:
+        logger.info("Loading non-EMA model weights")
+
     return Predictor(model_name, device, checkpoint, class_names, image_size)
 
 
@@ -124,7 +134,9 @@ class Predictor:
         state_dict, num_classes = self._load_checkpoint_state(checkpoint_path)
 
         # Set up model configuration
-        self.cfg = self._setup_model_config(model_name, num_classes, self.model_config.image_size)
+        self.cfg = self._setup_model_config(
+            model_name, num_classes, self.model_config.image_size
+        )
 
         # Load model weights
         self._load_model_weights(state_dict)
@@ -220,6 +232,7 @@ class Predictor:
         cfg = Config.from_model_name(model_name)
 
         from deimkit.dataset import _update_image_size
+
         _update_image_size(cfg, image_size)
 
         if num_classes is not None:
