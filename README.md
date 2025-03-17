@@ -131,6 +131,8 @@ Vehicles Dataset
 RBC Cells Dataset
 ![alt text](assets/sample_result_batch_1.png)
 
+Stomata Dataset
+![alt text](assets/sample_result_batch_2.png)
 
 See the [demo notebook on using pretrained models](nbs/pretrained-model-inference.ipynb) and [custom model inference](nbs/custom-model-inference.ipynb) for more details.
 
