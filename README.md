@@ -55,6 +55,8 @@ git clone https://github.com/dnth/DEIMKit.git
 cd DEIMKit
 pixi run quickstart
 ```
+This will download a toy dataset with 8 images, convert it to COCO format, and train a model on it for 10 epochs. It should not take more than 1 minute to complete.
+
 With that, you've got a working Python environment with all the dependencies installed. This also installs DEIMKit in editable mode for development.
 
 ### Using uv
