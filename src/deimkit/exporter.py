@@ -49,7 +49,12 @@ class Exporter:
         checkpoint = torch.load(checkpoint_path, map_location="cpu")
 
         # Extract state dict
-        state_dict = checkpoint.get("ema", {}).get("module", checkpoint.get("model"))
+        if "ema" in checkpoint and "module" in checkpoint["ema"]:
+            logger.info("Using EMA weights for model export")
+            state_dict = checkpoint["ema"]["module"]
+        else:
+            logger.info("EMA weights not found, using regular model weights")
+            state_dict = checkpoint.get("model")
 
         # Load state dict into model
         self.config.model.load_state_dict(state_dict)
