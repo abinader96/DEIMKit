@@ -51,9 +51,9 @@ curl -fsSL https://pixi.sh/install.sh | bash
 Navigate into the base directory of this repo and run 
 
 ```bash
-git clone https://github.com/dnth/DEIM.git
-cd DEIM
-pixi install 
+git clone https://github.com/dnth/DEIMKit.git
+cd DEIMKit
+pixi run quickstart
 ```
 With that, you've got a working Python environment with all the dependencies installed. This also installs DEIMKit in editable mode for development.
 
