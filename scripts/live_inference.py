@@ -323,28 +323,12 @@ def process_webcam(sess, device_id=0, class_names=None, input_size=640):
 
 def main(args):
     """Main function."""
-    # Set up ONNX runtime session with specified provider
-    providers = ['CPUExecutionProvider']
-    if args.gpu:
-        try:
-            # Check if GPU providers are available
-            available_providers = ort.get_available_providers()
-            if 'CUDAExecutionProvider' in available_providers:
-                providers = ['CUDAExecutionProvider', 'CPUExecutionProvider']
-                print("Using CUDA for inference")
-            elif 'TensorrtExecutionProvider' in available_providers:
-                providers = ['TensorrtExecutionProvider', 'CPUExecutionProvider']
-                print("Using TensorRT for inference")
-            else:
-                print("Warning: GPU requested but no GPU execution provider available. Falling back to CPU.")
-        except Exception as e:
-            print(f"Error initializing GPU providers: {e}")
-            print("Falling back to CPU execution.")
-            providers = ['CPUExecutionProvider']
+    # Set up ONNX runtime session with specified providers
+    providers = ['CUDAExecutionProvider', 'CPUExecutionProvider']
     
     # Load the ONNX model with specified providers
     try:
-        print("Loading ONNX model...")
+        print(f"Loading ONNX model with providers: {providers}...")
         sess_options = ort.SessionOptions()
         if args.optimization_level is not None:
             # Convert integer to the proper GraphOptimizationLevel enum
@@ -400,7 +384,6 @@ if __name__ == '__main__':
     parser.add_argument('--webcam', action='store_true', help='Use webcam as input source')
     parser.add_argument('--device-id', type=int, default=0, help='Webcam device ID (default: 0)')
     parser.add_argument('--class-names', type=str, help='Path to a text file with class names (one per line)')
-    parser.add_argument('--gpu', action='store_true', help='Use GPU for inference if available')
     parser.add_argument('--optimization-level', type=int, choices=[0, 1, 2, 99], 
                         help='ONNX Runtime optimization level (0=disable, 1=basic, 2=extended, 99=all)')
     parser.add_argument('--input-size', type=int, default=640, 
