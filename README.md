@@ -246,7 +246,7 @@ python scripts/live_inference.py
 > If you are using Pixi, you can run the live inference script with the following command.
 >
 > ```bash
-> pixi run -e gpu-env python scripts/live_inference.py 
+> pixi run -e gpu-env live-inference 
 >     --onnx model.onnx           # Path to the ONNX model file
 >     --input image.jpg           # Path to the input image file
 >     --class-names classes.txt   # Path to the classes file. Each class name should be on a new line.

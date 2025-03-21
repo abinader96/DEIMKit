@@ -36,6 +36,7 @@ torchvision = { version = "==0.20.1", index = "https://download.pytorch.org/whl/
 
 [tool.pixi.tasks]
 quickstart = "python scripts/quickstart.py"
+live-inference = "python scripts/live_inference.py"
 
 [tool.pixi.dependencies]
 ipywidgets = ">=8.1.5,<9"
