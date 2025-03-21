@@ -253,7 +253,7 @@ python scripts/live_inference.py
 >     --input-size 320            # Input size for the model
 >     --gpu                       # Use GPU for inference
 > ```
-> This automatically pull in the `onnxruntime-gpu` package and use the GPU for inference!
+> Under the hood, this automatically pull in the `onnxruntime-gpu` package into the `gpu-env` environment and use the GPU for inference!
 
 ## Disclaimer
 I'm not affiliated with the original DEIM authors. I just found the model interesting and wanted to try it out. The changes made here are of my own. Please cite and star the original repo if you find this useful.
