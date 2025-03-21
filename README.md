@@ -246,13 +246,17 @@ python scripts/live_inference.py
 > If you are using Pixi, you can run the live inference script with the following command with the same arguments as above.
 >
 > ```bash
-> pixi run --environment gpu live-inference 
->     --onnx model.onnx           # Path to the ONNX model file
->     --webcam                    # Use webcam as input source
->     --class-names classes.txt   # Path to the classes file. Each class name should be on a new line.
->     --input-size 320            # Input size for the model
+> pixi run --environment cuda live-inference 
+>     --onnx model.onnx           
+>     --webcam                    
+>     --class-names classes.txt   
+>     --input-size 320            
 > ```
 > Under the hood, this automatically pull in the `onnxruntime-gpu` package into the `gpu-env` environment and use the GPU for inference!
+>
+> If you want to use the CPU, replace `cuda` with `cpu` in the command above.
+
+
 
 ## Disclaimer
 I'm not affiliated with the original DEIM authors. I just found the model interesting and wanted to try it out. The changes made here are of my own. Please cite and star the original repo if you find this useful.
