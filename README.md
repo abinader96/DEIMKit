@@ -276,11 +276,11 @@ pixi run -e cpu train-model
 
 Run live inference
 ```bash
-pixi run -e cuda live-inference
+pixi run -e cuda live-inference --onnx model.onnx --webcam --class-names classes.txt --input-size 640
 ```
 
 ```bash
-pixi run -e cpu live-inference
+pixi run -e cpu live-inference --onnx model.onnx --input video.mp4 --class-names classes.txt --input-size 320
 ```
 
 Launch Gradio app
@@ -292,10 +292,10 @@ pixi run -e cuda gradio-demo
 pixi run -e cpu gradio-demo
 ```
 
-
-
-
-
+Export model to ONNX
+```bash
+pixi run export --config config.yml --checkpoint model.pth --output model.onnx
+```
 
 ## Disclaimer
 I'm not affiliated with the original DEIM authors. I just found the model interesting and wanted to try it out. The changes made here are of my own. Please cite and star the original repo if you find this useful.

@@ -1693,7 +1693,7 @@ packages:
 - pypi: .
   name: deimkit
   version: 0.1.0
-  sha256: 9032f3aefc12058e6cf9587c63fa093df619beef00f6178ab9e0152ab78dd169
+  sha256: 96c854918f0bd5d3bd28664a067beb3c6fa338590bb89801bdacf3b802e35457
   requires_dist:
   - faster-coco-eval>=1.6.5,<2
   - pyyaml>=6.0.2,<7
