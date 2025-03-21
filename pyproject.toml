@@ -16,7 +16,6 @@ dependencies = [
     "matplotlib",
     "onnx>=1.17.0,<2",
     "gradio>=5.20.1,<6",
-    "onnxruntime>=1.21.0,<2",
     "onnxsim>=0.4.36,<0.5",
 ]
 
@@ -31,19 +30,26 @@ platforms = ["linux-64", "win-64"]
 [tool.pixi.pypi-dependencies]
 deimkit = { path = ".", editable = true }
 
-torch = { version = "==2.5.1", index = "https://download.pytorch.org/whl/cu124" }
-torchvision = { version = "==0.20.1", index = "https://download.pytorch.org/whl/cu124" }
 
 [tool.pixi.tasks]
 quickstart = "python scripts/quickstart.py"
 live-inference = "python scripts/live_inference.py"
 
+[tool.pixi.feature.gpu.pypi-dependencies]
+torch = { version = "==2.5.1", index = "https://download.pytorch.org/whl/cu124" }
+torchvision = { version = "==0.20.1", index = "https://download.pytorch.org/whl/cu124" }
+onnxruntime-gpu = "==1.19.2"
+
+[tool.pixi.feature.cpu.pypi-dependencies]
+torch = { version = "==2.5.1", index = "https://download.pytorch.org/whl/cpu" }
+torchvision = { version = "==0.20.1", index = "https://download.pytorch.org/whl/cpu" }
+onnxruntime = "==1.19.2"
+
 [tool.pixi.dependencies]
 ipywidgets = ">=8.1.5,<9"
 ipykernel = ">=6.29.5,<7"
 
-[tool.pixi.feature.gpu.pypi-dependencies]
-onnxruntime-gpu = "==1.19.2"
-
 [tool.pixi.environments]
 gpu-env = ["gpu"]
+cpu-env = ["cpu"]
+default = { features = ["cpu"] }
