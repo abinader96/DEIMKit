@@ -11,6 +11,7 @@ from .config import Config
 from .engine.optim.lr_scheduler import FlatCosineLRScheduler
 from .engine.solver import TASKS
 from .engine.solver.det_engine import evaluate, train_one_epoch
+from .engine.misc import dist_utils
 
 
 class Trainer:
@@ -44,7 +45,7 @@ class Trainer:
         self.output_dir = None
         self.last_epoch = -1
 
-        self.distributed_initialized = False
+        self.distributed_initialized = False 
 
         # Initialize process group early
         self._init_process_group()
@@ -54,50 +55,65 @@ class Trainer:
         if self.distributed_initialized:
             return
 
-        logger.info("Initializing process group for single-process training")
+        # Script executed without torchrun
+        if "TORCHELASTIC_RUN_ID" not in os.environ:
 
-        # Set environment variables for distributed training
-        os.environ["WORLD_SIZE"] = "1"
-        os.environ["RANK"] = "0"
-        os.environ["LOCAL_RANK"] = "0"
-        os.environ["MASTER_ADDR"] = "127.0.0.1"  # Required for env:// initialization
-        os.environ["MASTER_PORT"] = "29500"  # Required for env:// initialization
+            logger.info("Initializing process group for single-process training")
 
-        # Initialize process group
-        if not torch.distributed.is_initialized():
-            try:
-                # Use file:// initialization which is more reliable for single-process
-                torch.distributed.init_process_group(
-                    backend="gloo",
-                    init_method="tcp://127.0.0.1:29500",
-                    world_size=1,
-                    rank=0,
-                )
-                logger.info("Process group initialized successfully")
-            except Exception as e:
-                logger.warning(f"Failed to initialize process group: {e}")
+            # Set environment variables for distributed training
+            os.environ["WORLD_SIZE"] = "1"
+            os.environ["RANK"] = "0"
+            os.environ["LOCAL_RANK"] = "0"
+            os.environ["MASTER_ADDR"] = "127.0.0.1"  # Required for env:// initialization
+            os.environ["MASTER_PORT"] = "29500"  # Required for env:// initialization
+            
+            if not torch.distributed.is_initialized():
 
-                # Try an alternative approach using file store
                 try:
-                    logger.info("Trying alternative initialization approach")
-                    import tempfile
-
-                    temp_dir = tempfile.mkdtemp()
-                    file_path = os.path.join(temp_dir, "shared_file")
-
-                    store = torch.distributed.FileStore(file_path, 1)
+                    # Use file:// initialization which is more reliable for single-process
                     torch.distributed.init_process_group(
-                        backend="gloo", store=store, rank=0, world_size=1
+                        backend="gloo",
+                        init_method="tcp://127.0.0.1:29500",
+                        world_size=1,
+                        rank=0,
                     )
-                    logger.info("Process group initialized successfully with FileStore")
-                except Exception as e2:
-                    logger.error(f"All initialization attempts failed: {e2}")
+                    logger.info("Process group initialized successfully")
+                except Exception as e:
+                    logger.warning(f"Failed to initialize process group: {e}")
 
-                    # Last resort: monkey patch torch.distributed
-                    logger.warning("Using monkey patching as last resort")
-                    self._monkey_patch_distributed()
+                    # Try an alternative approach using file store
+                    try:
+                        logger.info("Trying alternative initialization approach")
+                        import tempfile
 
-        self.distributed_initialized = True
+                        temp_dir = tempfile.mkdtemp()
+                        file_path = os.path.join(temp_dir, "shared_file")
+
+                        store = torch.distributed.FileStore(file_path, 1)
+                        torch.distributed.init_process_group(
+                            backend="gloo", store=store, rank=0, world_size=1
+                        )
+                        logger.info("Process group initialized successfully with FileStore")
+                    except Exception as e2:
+                        logger.error(f"All initialization attempts failed: {e2}")
+
+                        # Last resort: monkey patch torch.distributed
+                        logger.warning("Using monkey patching as last resort")
+                        self._monkey_patch_distributed()
+
+            self.distributed_initialized = True
+
+        # Script executed with torchrun
+        else:
+
+            logger.info(f"Initializing process group for multi-process training")
+            self.distributed_initialized = dist_utils.setup_distributed()
+
+            rank = torch.distributed.get_rank()
+            if rank != 0:
+                logger.remove()
+
+            logger.info(f"Distributed initialization successful: {self.distributed_initialized}")
 
     def _monkey_patch_distributed(self):
         """Monkey patch torch.distributed functions as a last resort."""
