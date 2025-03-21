@@ -57,7 +57,7 @@ pixi run quickstart
 ```
 This will download a toy dataset with 8 images, convert it to COCO format, and train a model on it for 10 epochs. It should not take more than 1 minute to complete.
 
-With that, you've got a working Python environment with all the dependencies installed. This also installs DEIMKit in editable mode for development.
+If this runs without any issues, you've got a working Python environment with all the dependencies installed. This also installs DEIMKit in editable mode for development.
 
 ### Using uv
 
@@ -223,8 +223,6 @@ The following is a demo of video inference after training for about 50 epochs on
 https://github.com/user-attachments/assets/5066768f-c97e-4999-af81-ffd29d88f529
 
 
-
-
 You can also run live inference on a webcam by setting the `webcam` flag.
 
 ```bash
@@ -244,6 +242,18 @@ python scripts/live_inference.py
     --input-size 320            # Input size for the model
 ```
 
+> [!TIP]
+> If you are using Pixi, you can run the live inference script with the following command.
+>
+> ```bash
+> pixi run -e gpu-env python scripts/live_inference.py 
+>     --onnx model.onnx           # Path to the ONNX model file
+>     --input image.jpg           # Path to the input image file
+>     --class-names classes.txt   # Path to the classes file. Each class name should be on a new line.
+>     --input-size 320            # Input size for the model
+>     --gpu                       # Use GPU for inference
+> ```
+> This automatically pull in the `onnxruntime-gpu` package and use the GPU for inference!
 
 ## Disclaimer
 I'm not affiliated with the original DEIM authors. I just found the model interesting and wanted to try it out. The changes made here are of my own. Please cite and star the original repo if you find this useful.
