@@ -125,7 +125,7 @@ def load_model(model_path):
     Returns:
         tuple: (session, error_message)
     """
-    providers = ["CPUExecutionProvider"]
+    providers = ["CUDAExecutionProvider", "CPUExecutionProvider"]
 
     try:
         # Print the model path to debug
@@ -184,12 +184,13 @@ def load_class_names(class_names_path):
         return None
 
 
-def prepare_image(image):
+def prepare_image(image, target_size=640):
     """
     Prepare image for inference by converting to PIL and resizing.
 
     Args:
         image: Input image (PIL or numpy array)
+        target_size: Target size for resizing (default: 640)
 
     Returns:
         tuple: (resized_image, original_image, ratio, padding)
@@ -199,7 +200,7 @@ def prepare_image(image):
         image = Image.fromarray(image).convert("RGB")
 
     # Resize image while preserving aspect ratio
-    resized_image, ratio, pad_w, pad_h = resize_with_aspect_ratio(image, 320)
+    resized_image, ratio, pad_w, pad_h = resize_with_aspect_ratio(image, target_size)
 
     return resized_image, image, ratio, (pad_w, pad_h)
 
@@ -308,7 +309,7 @@ def create_bar_data(object_counts):
         return pd.DataFrame({"Class": ["No objects detected"], "Count": [0]})
 
 
-def predict(image, model_path, class_names_path, confidence_threshold):
+def predict(image, model_path, class_names_path, confidence_threshold, image_size):
     """
     Main prediction function that orchestrates the detection pipeline.
 
@@ -317,6 +318,7 @@ def predict(image, model_path, class_names_path, confidence_threshold):
         model_path: Path to ONNX model
         class_names_path: Path to class names file or list of class names
         confidence_threshold: Detection confidence threshold
+        image_size: Size to resize the image to before inference
 
     Returns:
         tuple: (result_image, status_message, bar_data)
@@ -337,8 +339,8 @@ def predict(image, model_path, class_names_path, confidence_threshold):
     print(f"Class names for detection: {class_names}")
 
     try:
-        # Prepare image
-        resized_image, original_image, ratio, padding = prepare_image(image)
+        # Prepare image with the selected size
+        resized_image, original_image, ratio, padding = prepare_image(image, image_size)
 
         # Run inference
         output = run_inference(session, resized_image)
@@ -414,13 +416,23 @@ def build_interface(model_path, class_names_path, example_images=None):
         with gr.Row():
             with gr.Column():
                 input_image = gr.Image(type="pil", label="Input Image")
-                confidence = gr.Slider(
-                    minimum=0.1,
-                    maximum=1.0,
-                    value=0.4,
-                    step=0.01,
-                    label="Confidence Threshold",
-                )
+                
+                with gr.Row():
+                    confidence = gr.Slider(
+                        minimum=0.1,
+                        maximum=1.0,
+                        value=0.4,
+                        step=0.01,
+                        label="Confidence Threshold",
+                    )
+                    
+                    image_size = gr.Dropdown(
+                        choices=[320, 480, 640, 800],
+                        value=640,
+                        label="Image Size",
+                        info="Select image size for inference"
+                    )
+                
                 submit_btn = gr.Button("Run Inference", variant="primary")
 
             with gr.Column():
@@ -459,17 +471,19 @@ def build_interface(model_path, class_names_path, example_images=None):
 
         # Set up the click event inside the Blocks context
         submit_btn.click(
-            fn=lambda img, custom_model, custom_classes, conf: predict(
+            fn=lambda img, custom_model, custom_classes, conf, img_size: predict(
                 img,
                 get_model_path(custom_model, model_path),
                 get_classes_path(custom_classes, class_names_path),
-                conf
+                conf,
+                img_size
             ),
             inputs=[
                 input_image,
                 custom_model_path,
                 custom_classes_path,
                 confidence,
+                image_size,
             ],
             outputs=[output_image, output_message, count_plot],
         )

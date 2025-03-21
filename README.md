@@ -257,6 +257,45 @@ python scripts/live_inference.py
 > If you want to use the CPU, replace `cuda` with `cpu` in the command above.
 
 
+## Pixi Cheat Sheet
+Here are some useful tasks you can run with Pixi.
+
+Run a quickstart
+```bash
+pixi run quickstart
+```
+
+Train a model
+```bash
+pixi run -e cuda train-model
+```
+
+```bash
+pixi run -e cpu train-model
+```
+
+Run live inference
+```bash
+pixi run -e cuda live-inference
+```
+
+```bash
+pixi run -e cpu live-inference
+```
+
+Launch Gradio app
+```bash
+pixi run -e cuda gradio-demo
+```
+
+```bash
+pixi run -e cpu gradio-demo
+```
+
+
+
+
+
 
 ## Disclaimer
 I'm not affiliated with the original DEIM authors. I just found the model interesting and wanted to try it out. The changes made here are of my own. Please cite and star the original repo if you find this useful.

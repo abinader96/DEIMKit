@@ -51,9 +51,18 @@ class BaseSolver(object):
             print(f'Tuning checkpoint from {self.cfg.tuning}')
             self.load_tuning_state(self.cfg.tuning)
 
-        self.model = dist_utils.warp_model(
-            self.model.to(device), sync_bn=cfg.sync_bn, find_unused_parameters=cfg.find_unused_parameters
-        )
+        # Move model to device first
+        self.model = self.model.to(device)
+        
+        # Only wrap model with DDP/DP if using CUDA
+        if device.type == 'cuda':
+            self.model = dist_utils.warp_model(
+                self.model, 
+                sync_bn=cfg.sync_bn, 
+                find_unused_parameters=cfg.find_unused_parameters
+            )
+        else:
+            print("Using CPU device - skipping distributed model wrapping")
 
         self.criterion = self.to(cfg.criterion, device)
         self.postprocessor = self.to(cfg.postprocessor, device)
