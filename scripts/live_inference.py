@@ -3,7 +3,6 @@ Copyright (c) 2024 The D-FINE Authors. All Rights Reserved.
 """
 
 import torch
-import torchvision.transforms as T
 import numpy as np
 import onnxruntime as ort
 from PIL import Image, ImageDraw
@@ -109,16 +108,20 @@ def draw(images, labels, boxes, scores, ratios, paddings, thrh=0.4, class_names=
 def process_image(sess, im_pil, class_names=None, input_size=640):
     # Resize image while preserving aspect ratio
     resized_im_pil, ratio, pad_w, pad_h = resize_with_aspect_ratio(im_pil, input_size)
-    orig_size = torch.tensor([[resized_im_pil.size[1], resized_im_pil.size[0]]])
+    orig_size = np.array([[resized_im_pil.size[1], resized_im_pil.size[0]]], dtype=np.int64)
 
-    transforms = T.Compose([
-        T.ToTensor(),
-    ])
-    im_data = transforms(resized_im_pil).unsqueeze(0)
+    # Convert PIL image to numpy array and normalize to 0-1 range
+    im_data = np.array(resized_im_pil, dtype=np.float32) / 255.0
+    
+    # Transpose from HWC to CHW format (height, width, channels) -> (channels, height, width)
+    im_data = im_data.transpose(2, 0, 1)
+    
+    # Add batch dimension
+    im_data = np.expand_dims(im_data, axis=0)
 
     output = sess.run(
         output_names=None,
-        input_feed={'images': im_data.numpy(), "orig_target_sizes": orig_size.numpy()}
+        input_feed={'images': im_data, "orig_target_sizes": orig_size}
     )
 
     labels, boxes, scores = output
@@ -174,16 +177,20 @@ def process_video(sess, video_path, class_names=None, input_size=640):
 
         # Resize frame while preserving aspect ratio
         resized_frame_pil, ratio, pad_w, pad_h = resize_with_aspect_ratio(frame_pil, input_size)
-        orig_size = torch.tensor([[resized_frame_pil.size[1], resized_frame_pil.size[0]]])
+        orig_size = np.array([[resized_frame_pil.size[1], resized_frame_pil.size[0]]], dtype=np.int64)
 
-        transforms = T.Compose([
-            T.ToTensor(),
-        ])
-        im_data = transforms(resized_frame_pil).unsqueeze(0)
+        # Convert PIL image to numpy array and normalize to 0-1 range
+        im_data = np.array(resized_frame_pil, dtype=np.float32) / 255.0
+        
+        # Transpose from HWC to CHW format (height, width, channels) -> (channels, height, width)
+        im_data = im_data.transpose(2, 0, 1)
+        
+        # Add batch dimension
+        im_data = np.expand_dims(im_data, axis=0)
 
         output = sess.run(
             output_names=None,
-            input_feed={'images': im_data.numpy(), "orig_target_sizes": orig_size.numpy()}
+            input_feed={'images': im_data, "orig_target_sizes": orig_size}
         )
 
         labels, boxes, scores = output
@@ -267,16 +274,20 @@ def process_webcam(sess, device_id=0, class_names=None, input_size=640):
         
         # Resize frame while preserving aspect ratio
         resized_frame_pil, ratio, pad_w, pad_h = resize_with_aspect_ratio(frame_pil, input_size)
-        orig_size = torch.tensor([[resized_frame_pil.size[1], resized_frame_pil.size[0]]])
+        orig_size = np.array([[resized_frame_pil.size[1], resized_frame_pil.size[0]]], dtype=np.int64)
         
-        transforms = T.Compose([
-            T.ToTensor(),
-        ])
-        im_data = transforms(resized_frame_pil).unsqueeze(0)
+        # Convert PIL image to numpy array and normalize to 0-1 range
+        im_data = np.array(resized_frame_pil, dtype=np.float32) / 255.0
+        
+        # Transpose from HWC to CHW format (height, width, channels) -> (channels, height, width)
+        im_data = im_data.transpose(2, 0, 1)
+        
+        # Add batch dimension
+        im_data = np.expand_dims(im_data, axis=0)
         
         output = sess.run(
             output_names=None,
-            input_feed={'images': im_data.numpy(), "orig_target_sizes": orig_size.numpy()}
+            input_feed={'images': im_data, "orig_target_sizes": orig_size}
         )
         
         labels, boxes, scores = output
