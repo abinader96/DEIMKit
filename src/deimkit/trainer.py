@@ -204,6 +204,7 @@ class Trainer:
         stop_epoch: int | None = None,
         mixup_epochs: list[int] | None = None,
         save_best_only: bool = False,
+        pretrained: bool = True,
     ):
         """
         Train the model according to the configuration.
@@ -219,6 +220,7 @@ class Trainer:
             mixup_epochs: List of two integers that defines the epoch range during which mixup augmentation is active.
                           If None, automatically calculated as [3%, 50%] of total epochs.
             save_best_only: If True, only save the best model checkpoint.
+            pretrained: If True, use pretrained weights for the model.
         """
 
         logger.info("Starting training...")
@@ -241,6 +243,17 @@ class Trainer:
             # Update optimizer's learning rate
             for param_group in self.optimizer.param_groups:
                 param_group["lr"] = lr
+        
+        # Set pretrained flag in config
+        if "pretrained" in self.config.yaml_cfg.get("model", {}):
+            logger.info(f"Setting pretrained flag to {pretrained}")
+            self.config.yaml_cfg["model"]["pretrained"] = pretrained
+        else:
+            # Handle nested model configurations
+            for model_key in self.config.yaml_cfg:
+                if isinstance(self.config.yaml_cfg[model_key], dict) and "pretrained" in self.config.yaml_cfg[model_key]:
+                    logger.info(f"Setting pretrained flag to {pretrained} for {model_key}")
+                    self.config.yaml_cfg[model_key]["pretrained"] = pretrained
 
         # Get training parameters
         num_epochs = self.config.get("epoches", 50)
