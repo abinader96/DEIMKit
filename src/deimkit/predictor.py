@@ -85,11 +85,12 @@ def load_model(
     Returns:
         Initialized Predictor object
     """
-    if ema_weights:
-        logger.info("Loading EMA weights")
-        checkpoint = save_only_ema_weights(checkpoint)
-    else:
-        logger.info("Loading non-EMA model weights")
+    # if checkpoint:
+    #     if ema_weights:
+    #         logger.info("Loading EMA weights")
+    #         checkpoint = save_only_ema_weights(checkpoint)
+    #     else:
+    #         logger.info("Loading non-EMA model weights")
 
     return Predictor(model_name, device, checkpoint, class_names, image_size)
 
