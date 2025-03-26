@@ -1,7 +1,7 @@
 [![Python Badge](https://img.shields.io/badge/Python-3.11-3776AB?style=for-the-badge&logo=python&logoColor=white)](https://www.python.org/)
 [![License Badge](https://img.shields.io/badge/License-Apache%202.0-green.svg?style=for-the-badge&logo=apache&logoColor=white)](https://github.com/prefix-dev/pgsql-search/blob/main/LICENSE)
 [![Pixi Badge](https://img.shields.io/badge/🔌_Powered_by-Pixi-yellow?style=for-the-badge)](https://pixi.sh)
-[![Tested on](https://img.shields.io/badge/✓_Tested_on-Linux_•_macOS-purple?style=for-the-badge)](https://github.com/dnth/DEIMKit)
+[![Tested on](https://img.shields.io/badge/✓_Tested_on-Linux_•_macOS_•_Windows-purple?style=for-the-badge)](https://github.com/dnth/DEIMKit)
 
 
 <div align="center">
@@ -12,9 +12,9 @@
 
 ## Why DEIMKit?
 
-- Python instead of config files - Configure your model and dataset in a Python script instead of multiple config files.
-- Easy to install and use on any platform - One liner installation. I've only tested on Linux and MacOS, but it should work on any platform.
-- Simple Python interface - Load a model, make predictions, train a model, all in a few lines of code.
+- **Pure Python Configuration** - No YAML or JSON files, just clean Python code
+- **Cross-Platform Simplicity** - Single command installation on Linux, macOS, and Windows
+- **Intuitive API** - Load, train, and predict in just a few lines of code
 
 ## Supported Features
 
@@ -167,6 +167,13 @@ conf = configure_dataset(
 trainer = Trainer(conf)
 trainer.fit(epochs=100)
 ```
+
+To run multigpu training (4 GPU for example), place your code into a `train.py` file and use the following command. 
+
+```bash
+CUDA_VISIBLE_DEVICES=0,1,2,3 torchrun --master_port=7778 --nproc_per_node=4 train.py
+```
+Modify the number of GPUs available to your system.
 
 > [!CAUTION]
 > Your dataset should be in COCO format. The class index should **start from 0**. Refer to the structure of a sample dataset exported from [Roboflow](https://universe.roboflow.com/rf-projects/pcb-holes/dataset/4). From my tests this works for DEIMKit.
