@@ -49,12 +49,18 @@ pip install -e .
 ### Using Pixi
 
 > [!TIP] 
-> I recommend using [Pixi](https://pixi.sh) to run this package. Pixi makes it easy to install the right version of Python and the dependencies to run this package.
+> I recommend using [Pixi](https://pixi.sh) to run this package. Pixi makes it easy to install the right version of Python and the dependencies to run this package on any platform!
 
-Install pixi
+Install pixi if you're on Linux or MacOS. 
 
 ```bash
 curl -fsSL https://pixi.sh/install.sh | bash
+```
+
+For Windows, you can use the following command.
+
+```bash
+powershell -ExecutionPolicy ByPass -c "irm -useb https://pixi.sh/install.ps1 | iex"
 ```
 
 Navigate into the base directory of this repo and run 
@@ -64,7 +70,7 @@ git clone https://github.com/dnth/DEIMKit.git
 cd DEIMKit
 pixi run quickstart
 ```
-This will download a toy dataset with 8 images, convert it to COCO format, and train a model on it for 10 epochs. It should not take more than 1 minute to complete.
+This will download a toy dataset with 8 images, convert it to COCO format, and train a model on it for 3 epochs and runs inference on it. It should not take more than 1 minute to complete.
 
 If this runs without any issues, you've got a working Python environment with all the dependencies installed. This also installs DEIMKit in editable mode for development.
 
