@@ -372,7 +372,17 @@ class Trainer:
         self.config.yaml_cfg["device"] = str(self.device)
         logger.info(f"Using device: {self.device}")
 
-        best_stats = {"epoch": -1}
+        # Start training
+        start_time = time.time()
+        start_epoch = self.last_epoch + 1
+
+        # Save initial model as best.pth
+        if self.output_dir:
+            self._save_checkpoint(0, {}, self.output_dir / "best.pth")
+            logger.info(f"Initial model saved as best.pth")
+
+        # Initialize tracking variables
+        best_stats = {"epoch": 0}
         top1 = 0
 
         # Log model parameters
@@ -396,10 +406,6 @@ class Trainer:
                 no_aug_epochs=self.config.get("no_aug_epoch", 8),
             )
             self_lr_scheduler = True
-
-        # Start training
-        start_time = time.time()
-        start_epoch = self.last_epoch + 1
 
         for epoch in range(start_epoch, num_epochs):
             logger.info(f"Epoch {epoch}/{num_epochs}")

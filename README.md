@@ -13,7 +13,7 @@
 ## Why DEIMKit?
 
 - Python instead of config files - Configure your model and dataset in a Python script instead of multiple config files.
-- Easy to install and use on any platform - One liner installation. I've only tested on Linux, but it should work on any platform.
+- Easy to install and use on any platform - One liner installation. I've only tested on Linux and MacOS, but it should work on any platform.
 - Simple Python interface - Load a model, make predictions, train a model, all in a few lines of code.
 
 ## Supported Features
@@ -25,9 +25,17 @@
 ## Installation
 
 ### Using pip
+Install [torch](https://pytorch.org/get-started/locally/) and torchvision as a pre-requisite.
 
+Next, install the package.
+Bleeding edge version
 ```bash
 pip install git+https://github.com/dnth/DEIM.git
+```
+
+Stable version
+```bash
+pip install git+https://github.com/dnth/DEIM.git@v0.1.1
 ```
 
 Or install the package from the local directory in editable mode
@@ -59,13 +67,6 @@ pixi run quickstart
 This will download a toy dataset with 8 images, convert it to COCO format, and train a model on it for 10 epochs. It should not take more than 1 minute to complete.
 
 If this runs without any issues, you've got a working Python environment with all the dependencies installed. This also installs DEIMKit in editable mode for development.
-
-### Using uv
-
-```bash
-uv venv --python 3.11
-uv pip install -e . 
-```
 
 ## Usage
 
