@@ -1,4 +1,4 @@
-[![Python Badge](https://img.shields.io/badge/Python-3.11-3776AB?style=for-the-badge&logo=python&logoColor=white)](https://www.python.org/)
+[![Python Badge](https://img.shields.io/badge/Python-3.10_|_3.11_|_3.12-3776AB?style=for-the-badge&logo=python&logoColor=white)](https://www.python.org/)
 [![License Badge](https://img.shields.io/badge/License-Apache%202.0-green.svg?style=for-the-badge&logo=apache&logoColor=white)](https://github.com/prefix-dev/pgsql-search/blob/main/LICENSE)
 [![Pixi Badge](https://img.shields.io/badge/🔌_Powered_by-Pixi-yellow?style=for-the-badge)](https://pixi.sh)
 [![Tested on](https://img.shields.io/badge/✓_Tested_on-Linux_•_macOS_•_Windows-purple?style=for-the-badge)](https://github.com/dnth/DEIMKit)
@@ -247,6 +247,10 @@ python scripts/live_inference.py
     --class-names classes.txt   # Path to the classes file. Each class name should be on a new line.
     --input-size 320            # Input size for the model
 ```
+The following is a demo of webcam inference after training on the rock paper scissors dataset 640x640 resolution image.
+
+https://github.com/user-attachments/assets/6e5dbb15-4e3a-45a3-997e-157bb9370146
+
 
 For image inference, specify the path to the image file as the input.
 ```bash
@@ -280,6 +284,14 @@ Run a quickstart
 pixi run quickstart
 ```
 
+Smoke test the package
+```bash
+pixi run -e cpu quickstart
+```
+```bash
+pixi run -e cuda quickstart
+```
+
 Train a model
 ```bash
 pixi run -e cuda train-model
@@ -311,6 +323,8 @@ Export model to ONNX
 ```bash
 pixi run export --config config.yml --checkpoint model.pth --output model.onnx
 ```
+
+
 
 ## Disclaimer
 I'm not affiliated with the original DEIM authors. I just found the model interesting and wanted to try it out. The changes made here are of my own. Please cite and star the original repo if you find this useful.
