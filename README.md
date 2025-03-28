@@ -26,6 +26,7 @@
 
 ## Quickstart
 Here's a quick example how to start using DEIMKit.
+
 [![Open In Colab][colab_badge]](https://colab.research.google.com/github/dnth/DEIMKit/blob/main/nbs/colab-quickstart.ipynb)
 [![Open In Kaggle][kaggle_badge]](https://kaggle.com/kernels/welcome?src=https://github.com/dnth/DEIMKit/blob/main/nbs/colab-quickstart.ipynb)
 
