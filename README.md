@@ -3,6 +3,8 @@
 [![Pixi Badge](https://img.shields.io/badge/🔌_Powered_by-Pixi-yellow?style=for-the-badge)](https://pixi.sh)
 [![Tested on](https://img.shields.io/badge/✓_Tested_on-Linux_•_macOS_•_Windows-purple?style=for-the-badge)](https://github.com/dnth/DEIMKit)
 
+[colab_badge]: https://img.shields.io/badge/Open%20In-Colab-blue?style=for-the-badge&logo=google-colab
+[kaggle_badge]: https://img.shields.io/badge/Open%20In-Kaggle-blue?style=for-the-badge&logo=kaggle
 
 <div align="center">
 <img src="assets/logo.png" alt="DEIMKit Logo" width="650">
@@ -21,6 +23,17 @@
 - [x] Inference
 - [x] Training
 - [x] Export
+
+## Quickstart
+Here's a quick example how to start using DEIMKit.
+[![Open In Colab][colab_badge]](https://colab.research.google.com/github/dnth/DEIMKit/blob/main/nbs/colab-quickstart.ipynb)
+[![Open In Kaggle][kaggle_badge]](https://kaggle.com/kernels/welcome?src=https://github.com/dnth/DEIMKit/blob/main/nbs/colab-quickstart.ipynb)
+
+
+## Installation
+
+### Using pip
+Install [torch](https://pytorch.org/get-started/locally/) and torchvision as a pre-requisite.
 
 ## Installation
 
