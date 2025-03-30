@@ -18,3 +18,5 @@ from .dataset import configure_dataset
 from .model import configure_model
 from .utils import save_only_ema_weights
 from .exporter import Exporter
+
+__version__ = "0.1.2"
