@@ -57,14 +57,6 @@ Stable version
 pip install git+https://github.com/dnth/DEIM.git@v0.1.1
 ```
 
-Or install the package from the local directory in editable mode
-
-```bash
-git clone https://github.com/dnth/DEIM.git
-cd DEIM
-pip install -e .
-```
-
 ### Using Pixi
 
 > [!TIP] 
