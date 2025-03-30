@@ -12,6 +12,17 @@
 <p>DEIMKit is a Python wrapper for <a href="https://github.com/ShihuaHuang95/DEIM">DEIM: DETR with Improved Matching for Fast Convergence</a>. Check out the original repo for more details.</p>
 </div>
 
+<div align="center">
+  <a href="https://colab.research.google.com/github/dnth/DEIMKit/blob/main/nbs/colab-quickstart.ipynb">
+    <img src="https://img.shields.io/badge/Open%20In-Colab-blue?style=for-the-badge&logo=google-colab" alt="Open In Colab"/>
+  </a>
+  <a href="https://kaggle.com/kernels/welcome?src=https://github.com/dnth/DEIMKit/blob/main/nbs/colab-quickstart.ipynb">
+    <img src="https://img.shields.io/badge/Open%20In-Kaggle-blue?style=for-the-badge&logo=kaggle" alt="Open In Kaggle"/>
+  </a>
+</div>
+</div>
+
+
 ## Why DEIMKit?
 
 - **Pure Python Configuration** - No complicated YAML files, just clean Python code
@@ -23,12 +34,6 @@
 - [x] Inference
 - [x] Training
 - [x] Export
-
-## Quickstart
-Here's a quick example how to start using DEIMKit.
-
-[![Open In Colab][colab_badge]](https://colab.research.google.com/github/dnth/DEIMKit/blob/main/nbs/colab-quickstart.ipynb)
-[![Open In Kaggle][kaggle_badge]](https://kaggle.com/kernels/welcome?src=https://github.com/dnth/DEIMKit/blob/main/nbs/colab-quickstart.ipynb)
 
 
 ## Installation
