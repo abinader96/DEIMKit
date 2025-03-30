@@ -213,6 +213,8 @@ class Trainer:
         warmup_iter: int | None = None,
         ema_warmups: int | None = None,
         lr: float | None = None,
+        lr_gamma: float | None = None,
+        weight_decay: float | None = None,
         stop_epoch: int | None = None,
         mixup_epochs: list[int] | None = None,
         save_best_only: bool = False,
@@ -228,6 +230,7 @@ class Trainer:
             warmup_iter: Number of warmup iterations. If None, uses config value.
             ema_warmups: Number of EMA warmup steps. If None, uses config value.
             lr: Learning rate override. If None, uses config value.
+            lr_gamma: Annealing factor for the learning rate. If 0.5 (default), anneals the learning rate by 50% at the end of the training cycle.
             stop_epoch: Controls when multi-scale training should stop. A large value means continue training with multi-scale without stopping.
             mixup_epochs: List of two integers that defines the epoch range during which mixup augmentation is active.
                           If None, automatically calculated as [3%, 50%] of total epochs.
@@ -252,9 +255,14 @@ class Trainer:
         if lr is not None:
             logger.info(f"Overriding learning rate to {lr}")
             self.config.yaml_cfg["optimizer"]["lr"] = lr
-            # Update optimizer's learning rate
-            for param_group in self.optimizer.param_groups:
-                param_group["lr"] = lr
+        if lr_gamma is not None:
+            logger.info(f"Overriding learning rate gamma to {lr_gamma}")
+            self.config.yaml_cfg["lr_gamma"] = lr_gamma
+            self.config.lr_gamma= lr_gamma
+
+        if weight_decay is not None:
+            logger.info(f"Overriding weight decay to {weight_decay}")
+            self.config.yaml_cfg["optimizer"]["weight_decay"] = weight_decay
         
         # Set pretrained flag in config
         if "pretrained" in self.config.yaml_cfg.get("model", {}):
