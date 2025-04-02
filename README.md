@@ -98,7 +98,7 @@ pip install git+https://github.com/dnth/DEIM.git
 
 Stable version
 ```bash
-pip install git+https://github.com/dnth/DEIM.git@v0.1.1
+pip install git+https://github.com/dnth/DEIM.git@v0.2.0
 ```
 
 ### 🔌 Using Pixi
