@@ -5,15 +5,8 @@ import pkg_resources
 
 from .engine.core import BaseConfig, YAMLConfig
 
+from .model import list_models
 
-def list_models():
-    return [
-        "deim_hgnetv2_n",
-        "deim_hgnetv2_s",
-        "deim_hgnetv2_m",
-        "deim_hgnetv2_l",
-        "deim_hgnetv2_x",
-    ]
 
 
 class Config(YAMLConfig):

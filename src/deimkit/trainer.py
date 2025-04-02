@@ -8,10 +8,10 @@ import torch
 from loguru import logger
 
 from .config import Config
+from .engine.misc import dist_utils
 from .engine.optim.lr_scheduler import FlatCosineLRScheduler
 from .engine.solver import TASKS
 from .engine.solver.det_engine import evaluate, train_one_epoch
-from .engine.misc import dist_utils
 
 
 class Trainer:
@@ -45,7 +45,7 @@ class Trainer:
         self.output_dir = None
         self.last_epoch = -1
 
-        self.distributed_initialized = False 
+        self.distributed_initialized = False
 
         # Initialize process group early
         self._init_process_group()
@@ -57,18 +57,18 @@ class Trainer:
 
         # Script executed without torchrun
         if "TORCHELASTIC_RUN_ID" not in os.environ:
-
             logger.info("Initializing process group for single-process training")
 
             # Set environment variables for distributed training
             os.environ["WORLD_SIZE"] = "1"
             os.environ["RANK"] = "0"
             os.environ["LOCAL_RANK"] = "0"
-            os.environ["MASTER_ADDR"] = "127.0.0.1"  # Required for env:// initialization
+            os.environ["MASTER_ADDR"] = (
+                "127.0.0.1"  # Required for env:// initialization
+            )
             os.environ["MASTER_PORT"] = "29500"  # Required for env:// initialization
-            
-            if not torch.distributed.is_initialized():
 
+            if not torch.distributed.is_initialized():
                 try:
                     # Use file:// initialization which is more reliable for single-process
                     torch.distributed.init_process_group(
@@ -93,7 +93,9 @@ class Trainer:
                         torch.distributed.init_process_group(
                             backend="gloo", store=store, rank=0, world_size=1
                         )
-                        logger.info("Process group initialized successfully with FileStore")
+                        logger.info(
+                            "Process group initialized successfully with FileStore"
+                        )
                     except Exception as e2:
                         logger.error(f"All initialization attempts failed: {e2}")
 
@@ -105,7 +107,6 @@ class Trainer:
 
         # Script executed with torchrun
         else:
-
             logger.info(f"Initializing process group for multi-process training")
             self.distributed_initialized = dist_utils.setup_distributed()
 
@@ -113,7 +114,9 @@ class Trainer:
             if rank != 0:
                 logger.remove()
 
-            logger.info(f"Distributed initialization successful: {self.distributed_initialized}")
+            logger.info(
+                f"Distributed initialization successful: {self.distributed_initialized}"
+            )
 
     def _monkey_patch_distributed(self):
         """Monkey patch torch.distributed functions as a last resort."""
@@ -145,13 +148,6 @@ class Trainer:
         self.output_dir = Path(self.config.get("output_dir", "./outputs"))
         self.output_dir.mkdir(parents=True, exist_ok=True)
 
-        # Modify config to avoid distributed issues
-        # if "HGNetv2" in self.config.yaml_cfg:
-        #     logger.info(
-        #         "Setting HGNetv2 pretrained to False to avoid distributed issues"
-        #     )
-        #     self.config.yaml_cfg["HGNetv2"]["pretrained"] = False
-
         # Disable sync_bn and find_unused_parameters which require multi-GPU
         logger.info(
             "Disabling sync_bn and find_unused_parameters for single-process training"
@@ -160,13 +156,15 @@ class Trainer:
         self.config.find_unused_parameters = False
 
         # Properly set the device in config
-        self.config.device = str(self.device)  # This will set the top-level device parameter
+        self.config.device = str(
+            self.device
+        )  # This will set the top-level device parameter
         # write to yaml_cfg
         self.config.yaml_cfg["device"] = str(self.device)
         logger.info(f"Set device in config: {self.device}")
 
         # Disable multiprocessing for CPU training
-        if self.device.type == 'cpu':
+        if self.device.type == "cpu":
             logger.info("Running on CPU - setting num_workers=0 for DataLoader")
             self.config.yaml_cfg["train_dataloader"]["num_workers"] = 0
             self.config.yaml_cfg["val_dataloader"]["num_workers"] = 0
@@ -258,12 +256,12 @@ class Trainer:
         if lr_gamma is not None:
             logger.info(f"Overriding learning rate gamma to {lr_gamma}")
             self.config.yaml_cfg["lr_gamma"] = lr_gamma
-            self.config.lr_gamma= lr_gamma
+            self.config.lr_gamma = lr_gamma
 
         if weight_decay is not None:
             logger.info(f"Overriding weight decay to {weight_decay}")
             self.config.yaml_cfg["optimizer"]["weight_decay"] = weight_decay
-        
+
         # Set pretrained flag in config
         if "pretrained" in self.config.yaml_cfg.get("model", {}):
             logger.info(f"Setting pretrained flag to {pretrained}")
@@ -271,8 +269,13 @@ class Trainer:
         else:
             # Handle nested model configurations
             for model_key in self.config.yaml_cfg:
-                if isinstance(self.config.yaml_cfg[model_key], dict) and "pretrained" in self.config.yaml_cfg[model_key]:
-                    logger.info(f"Setting pretrained flag to {pretrained} for {model_key}")
+                if (
+                    isinstance(self.config.yaml_cfg[model_key], dict)
+                    and "pretrained" in self.config.yaml_cfg[model_key]
+                ):
+                    logger.info(
+                        f"Setting pretrained flag to {pretrained} for {model_key}"
+                    )
                     self.config.yaml_cfg[model_key]["pretrained"] = pretrained
 
         # Get training parameters
@@ -450,7 +453,11 @@ class Trainer:
             self.last_epoch += 1
 
             # Save checkpoint
-            if self.output_dir and (epoch + 1) % checkpoint_freq == 0 and not save_best_only:
+            if (
+                self.output_dir
+                and (epoch + 1) % checkpoint_freq == 0
+                and not save_best_only
+            ):
                 checkpoint_path = self.output_dir / f"checkpoint{epoch:04}.pth"
                 self._save_checkpoint(epoch, train_stats, checkpoint_path)
 
@@ -539,9 +546,9 @@ class Trainer:
         # Save final checkpoint if not save_best_only
         if self.output_dir and not save_best_only:
             final_checkpoint_path = self.output_dir / f"checkpoint_final.pth"
-            self._save_checkpoint(num_epochs-1, eval_stats, final_checkpoint_path)
+            self._save_checkpoint(num_epochs - 1, eval_stats, final_checkpoint_path)
             logger.info(f"Final checkpoint saved to {final_checkpoint_path}")
-        
+
         # Log training time
         total_time = time.time() - start_time
         total_time_str = str(datetime.timedelta(seconds=int(total_time)))

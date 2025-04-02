@@ -1,7 +1,7 @@
 import requests
 import zipfile
 import os
-from deimkit import Trainer, Config, configure_dataset, load_model, list_models
+from deimkit import Trainer, Config, configure_dataset, load_model, list_models, configure_model
 from loguru import logger
 
 
@@ -50,6 +50,8 @@ conf = configure_dataset(
     num_classes=81,
     output_dir="./outputs/coco8/deim_hgnetv2_n",
 )
+
+conf = configure_model(conf, pretrained=True, freeze_at=0)
 
 logger.info("Training model...")
 trainer = Trainer(conf)

@@ -1,16 +1,27 @@
-from typing import Any, Dict, Optional
+from typing import TYPE_CHECKING, Any, Dict, Optional
 
 from loguru import logger
 
-from .config import Config
+if TYPE_CHECKING:
+    from .config import Config
+
+
+def list_models():
+    return [
+        "deim_hgnetv2_n",
+        "deim_hgnetv2_s",
+        "deim_hgnetv2_m",
+        "deim_hgnetv2_l",
+        "deim_hgnetv2_x",
+    ]
 
 
 def configure_model(
-    config: Config,
+    config: "Config",
     num_queries: Optional[int] = None,
     pretrained: Optional[bool] = None,
     freeze_at: Optional[int] = None,
-) -> Config:
+) -> "Config":
     """
     Applies specific model parameter overrides to an existing Config object
     using explicit named arguments for selected parameters.
@@ -29,10 +40,6 @@ def configure_model(
         ValueError: If essential parameter paths (like component types)
                     cannot be determined from the provided config object when needed.
     """
-    if not isinstance(config, Config):
-        raise TypeError(
-            f"Expected a deimkit.config.Config object, but got {type(config)}"
-        )
 
     updates: Dict[str, Any] = {}
 
@@ -66,44 +73,39 @@ def configure_model(
             f"Settings might fail. Error: {e}"
         )
 
-    if num_queries is not None:
-        if decoder_type:
-            key = f"yaml_cfg.{decoder_type}.num_queries"
-            updates[key] = num_queries
-            logger.info(f"Setting '{key}' to: {num_queries}")
-
-            # Sets the number of top queries to be equal to the number of queries
-            key = f"yaml_cfg.PostProcessor.num_top_queries"
-            updates[key] = num_queries
-            logger.info(f"Setting '{key}' to: {num_queries}")
-        else:
-            logger.warning(f"Cannot set 'num_queries' because decoder type is unknown.")
-
-    if pretrained is not None:
-        if backbone_type:
-            key = f"yaml_cfg.{backbone_type}.pretrained"
-            updates[key] = pretrained
-            logger.info(f"Setting '{key}' to: {pretrained}")
+    def update_setting(
+        setting_type: str, value: Any, type_name: Optional[str], setting_path: str
+    ) -> None:
+        """Helper function to update settings with consistent logging"""
+        if type_name:
+            key = f"yaml_cfg.{type_name}.{setting_path}"
+            updates[key] = value
+            logger.info(f"Setting '{key}' to: {value}")
         else:
             logger.warning(
-                f"Cannot set 'use_pretrained_backbone' because backbone type is unknown."
+                f"Cannot set '{setting_path}' because {setting_type} type is unknown."
             )
+
+    if num_queries is not None:
+        if decoder_type:
+            update_setting("decoder", num_queries, decoder_type, "num_queries")
+            # Special case for PostProcessor
+            update_setting(
+                "post_processor", num_queries, "PostProcessor", "num_top_queries"
+            )
+        else:
+            logger.warning("Cannot set 'num_queries' because decoder type is unknown.")
+
+    if pretrained is not None:
+        update_setting("backbone", pretrained, backbone_type, "pretrained")
 
     if freeze_at is not None:
         if backbone_type:
-            key = f"yaml_cfg.{backbone_type}.freeze_at"
-            updates[key] = freeze_at
-
-            if (
-                freeze_at > 0
-            ):  # If freeze_at is greater than 0, then set freeze_stem_only to False. freeze_at = 0 also means freeze the stem block.
-                key = f"yaml_cfg.{backbone_type}.freeze_stem_only"
-                updates[key] = False
-                logger.info(f"Setting '{key}' to: {False}")
-
-            logger.info(f"Setting '{key}' to: {freeze_at}")
+            update_setting("backbone", freeze_at, backbone_type, "freeze_at")
+            if freeze_at > 0:
+                update_setting("backbone", False, backbone_type, "freeze_stem_only")
         else:
-            logger.warning(f"Cannot set 'freeze_at' because backbone type is unknown.")
+            logger.warning("Cannot set 'freeze_at' because backbone type is unknown.")
 
     if updates:
         config.update(**updates)  # Modifies the original config object
