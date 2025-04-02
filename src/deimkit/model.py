@@ -108,6 +108,6 @@ def configure_model(
             logger.warning("Cannot set 'freeze_at' because backbone type is unknown.")
 
     if updates:
-        config.update(**updates)  # Modifies the original config object
+        config.update(**updates)  
 
-    return config  # Return the same object
+    return config  
