@@ -236,6 +236,9 @@ conf = configure_dataset(
 
 trainer = Trainer(conf)
 
+# Optional - Load from a previously trained checkpoint
+trainer.load_checkpoint("previous_best.pth")
+
 # All arguments are optional, if not specified, the default values for the model will be used.
 trainer.fit(
     epochs=100,          # Number of training epochs
