@@ -333,6 +333,9 @@ python scripts/gradio_demo.py \
 > Some objects are visible even at lower input sizes, this means you can use a lower input size to speed up inference.
 
 ### 🎥 Live Inference
+> [!TIP]
+> Live inference is provided as an independent script so that you can load this script into any deployment devices without having to install all the (large) dependencies in this repo. The script only requires `onnxruntime`, `cv2` and `numpy` to run.
+
 Run live inference on a video, image or webcam using ONNXRuntime. This runs on CPU by default.
 If you would like to use the CUDA backend, install the `onnxruntime-gpu` package and uninstall the `onnxruntime` package.
 
