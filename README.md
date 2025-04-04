@@ -454,31 +454,25 @@ The following is a demo of image inference
 
 
 ## 📝 Pixi Cheat Sheet
-Here are some useful tasks you can run with Pixi.
+Here are some useful tasks you can run with Pixi. You must install pixi on your machine first. See the [installation](#-installation) section for more details.
+For all the commands below, you can add `-e cuda` if you have a CUDA enabled GPU on your machine.
 
-Run a quickstart
+Run a quickstart to check if your environment is setup correctly. By default, this will run in a CPU environment.
 ```bash
 pixi run quickstart
 ```
 
-Smoke test the package
-```bash
-pixi run -e cpu quickstart
-```
+or to run in a CUDA enabled environment
 ```bash
 pixi run -e cuda quickstart
 ```
 
-Train a model
+Live inference with pretrained model on webcam
 ```bash
-pixi run -e cuda train-model
+pixi run -e cuda live-inference-pretrained --webcam
 ```
 
-```bash
-pixi run -e cpu train-model
-```
-
-Run live inference
+Run live inference on a custom onnx model
 ```bash
 pixi run -e cuda live-inference --onnx model.onnx --webcam --provider cuda --class-names classes.txt --inference-size 640
 ```
@@ -495,11 +489,6 @@ pixi run -e cuda live-inference --onnx model.onnx --webcam --provider cuda --cla
 pixi run -e cpu live-inference --onnx model.onnx --input video.mp4 --class-names classes.txt --inference-size 320
 ```
 
-Live inference with pretrained model on webcam
-```bash
-pixi run -e cuda live-inference-pretrained --webcam
-```
-
 Launch Gradio app
 ```bash
 pixi run gradio-demo --model "best_prep.onnx" --classes "classes.txt" --examples "Rock Paper Scissors SXSW.v14i.coco/test"
@@ -509,11 +498,19 @@ pixi run gradio-demo --model "best_prep.onnx" --classes "classes.txt" --examples
 pixi run -e cpu gradio-demo
 ```
 
+Train a model
+```bash
+pixi run -e cuda train-model
+```
+
+```bash
+pixi run -e cpu train-model
+```
+
 Export model to ONNX
 ```bash
 pixi run export --config config.yml --checkpoint model.pth --output model.onnx
 ```
-
 
 
 ## ⚠️ Disclaimer
