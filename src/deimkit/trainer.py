@@ -261,8 +261,6 @@ class Trainer:
             logger.info(f"Overriding weight decay to {weight_decay}")
             self.config.yaml_cfg["optimizer"]["weight_decay"] = weight_decay
 
-
-
         # Get training parameters
         num_epochs = self.config.get("epoches", 50)
         clip_max_norm = self.config.get("clip_max_norm", 0.1)
