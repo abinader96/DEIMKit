@@ -216,7 +216,6 @@ class Trainer:
         stop_epoch: int | None = None,
         mixup_epochs: list[int] | None = None,
         save_best_only: bool = False,
-        pretrained: bool = True,
     ):
         """
         Train the model according to the configuration.
@@ -262,21 +261,7 @@ class Trainer:
             logger.info(f"Overriding weight decay to {weight_decay}")
             self.config.yaml_cfg["optimizer"]["weight_decay"] = weight_decay
 
-        # Set pretrained flag in config
-        if "pretrained" in self.config.yaml_cfg.get("model", {}):
-            logger.info(f"Setting pretrained flag to {pretrained}")
-            self.config.yaml_cfg["model"]["pretrained"] = pretrained
-        else:
-            # Handle nested model configurations
-            for model_key in self.config.yaml_cfg:
-                if (
-                    isinstance(self.config.yaml_cfg[model_key], dict)
-                    and "pretrained" in self.config.yaml_cfg[model_key]
-                ):
-                    logger.info(
-                        f"Setting pretrained flag to {pretrained} for {model_key}"
-                    )
-                    self.config.yaml_cfg[model_key]["pretrained"] = pretrained
+
 
         # Get training parameters
         num_epochs = self.config.get("epoches", 50)
