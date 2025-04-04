@@ -10,4 +10,4 @@ from .trainer import Trainer
 from .utils import save_only_ema_weights
 from .visualization import draw_on_image, visualize_detections
 
-__version__ = "0.2.0"
+__version__ = "0.2.1"

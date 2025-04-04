@@ -100,7 +100,7 @@ pip install git+https://github.com/dnth/DEIM.git
 
 Stable version
 ```bash
-pip install git+https://github.com/dnth/DEIM.git@v0.2.0
+pip install git+https://github.com/dnth/DEIM.git@v0.2.1
 ```
 
 ### 🔌 Using Pixi
@@ -484,11 +484,11 @@ pixi run -e cuda live-inference --onnx model.onnx --webcam --provider cuda --cla
 ```
 
 > [!TIP]
-> If you want to use TensorRT for inference, you may need to set the `LD_LIBRARY_PATH` environment variable to include the TensorRT libraries.
+> If you want to use TensorRT for inference, you may need to set the `LD_LIBRARY_PATH` environment variable to include the TensorRT libraries. To do so, navigate into the base directory of this repo and run the following command.
 >
 > For example
 > ```bash
-> export LD_LIBRARY_PATH="/home/dnth/Desktop/DEIMKit/.pixi/envs/cuda/lib/python3.11/site-packages/tensorrt_libs:$LD_LIBRARY_PATH"
+> export LD_LIBRARY_PATH=".pixi/envs/cuda/lib/python3.11/site-packages/tensorrt_libs:$LD_LIBRARY_PATH"
 > ```
 
 ```bash
