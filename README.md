@@ -61,6 +61,7 @@
 </div>
 
 ## 🤔 Why DEIMKit?
+DEIMKit provides practical toolkits for using the DEIM object detector in practical applications. The original DEIM repo provides a great implementation of the DEIM object detector and DEIMKit adds some useful features for training, inference, exporting and deploying the model.
 
 - **Pure Python Configuration** - No complicated YAML files, just clean Python code
 - **Cross-Platform Simplicity** - Single command installation on Linux, macOS, and Windows
