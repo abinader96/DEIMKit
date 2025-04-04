@@ -348,6 +348,8 @@ def evaluate(model: torch.nn.Module, criterion: torch.nn.Module, postprocessor, 
     if coco_evaluator is not None:
         if 'bbox' in iou_types:
             bbox_stats = coco_evaluator.coco_eval['bbox'].stats
+            stats['coco_eval_bbox'] = bbox_stats.tolist()
+
             # Add top-level metrics for quick overview
             if writer is not None and dist_utils.is_main_process() and global_step is not None:
                 # Primary metrics at top level
@@ -412,6 +414,8 @@ def evaluate(model: torch.nn.Module, criterion: torch.nn.Module, postprocessor, 
             
             if 'segm' in iou_types:
                 segm_stats = coco_evaluator.coco_eval['segm'].stats
+                stats['coco_eval_segm'] = segm_stats.tolist()
+                
                 # Average Precision metrics (indices 0-5)
                 writer.add_scalar('metrics-AP/IoU_0.50-0.95_area_all_maxDets_100', segm_stats[0], global_step)
                 writer.add_scalar('metrics-AP/IoU_0.50_area_all_maxDets_100', segm_stats[1], global_step)
