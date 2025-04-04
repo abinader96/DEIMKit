@@ -10,6 +10,8 @@ import pandas as pd
 from PIL import Image, ImageDraw
 import cv2
 
+ort.preload_dlls()
+
 
 # Use absolute paths instead of relative paths
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))

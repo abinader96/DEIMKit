@@ -455,63 +455,72 @@ The following is a demo of image inference
 
 ## 📝 Pixi Cheat Sheet
 Here are some useful tasks you can run with Pixi. You must install pixi on your machine first. See the [installation](#-installation) section for more details.
-For all the commands below, you can add `-e cuda` if you have a CUDA enabled GPU on your machine.
 
-Run a quickstart to check if your environment is setup correctly. By default, this will run in a CPU environment.
+> [!NOTE]
+> For all commands below, you can add `-e cuda` to run in a CUDA-enabled environment instead of CPU.
+
+### 🚀 Getting Started
 ```bash
+# Check environment setup (CPU)
 pixi run quickstart
-```
 
-or to run in a CUDA enabled environment
-```bash
+# Check environment setup (CUDA)
 pixi run -e cuda quickstart
 ```
 
-Live inference with pretrained model on webcam
+### 🎥 Inference Commands
 ```bash
+# Live inference with pretrained model (webcam)
 pixi run -e cuda live-inference-pretrained --webcam
+
+# Live inference with custom ONNX model (webcam)
+pixi run -e cuda live-inference \
+    --onnx model.onnx \
+    --webcam \
+    --provider cuda \
+    --class-names classes.txt \
+    --inference-size 640
+
+# Video inference (CPU)
+pixi run -e cpu live-inference \
+    --onnx model.onnx \
+    --input video.mp4 \
+    --class-names classes.txt \
+    --inference-size 320
 ```
 
-Run live inference on a custom onnx model
+### 🖥️ Gradio Demo
 ```bash
-pixi run -e cuda live-inference --onnx model.onnx --webcam --provider cuda --class-names classes.txt --inference-size 640
-```
+# Launch Gradio demo with examples
+pixi run gradio-demo \
+    --model "best_prep.onnx" \
+    --classes "classes.txt" \
+    --examples "Rock Paper Scissors SXSW.v14i.coco/test"
 
-> [!TIP]
-> If you want to use TensorRT for inference, you may need to set the `LD_LIBRARY_PATH` environment variable to include the TensorRT libraries. To do so, navigate into the base directory of this repo and run the following command.
->
-> For example
-> ```bash
-> export LD_LIBRARY_PATH=".pixi/envs/cuda/lib/python3.11/site-packages/tensorrt_libs:$LD_LIBRARY_PATH"
-> ```
-
-```bash
-pixi run -e cpu live-inference --onnx model.onnx --input video.mp4 --class-names classes.txt --inference-size 320
-```
-
-Launch Gradio app
-```bash
-pixi run gradio-demo --model "best_prep.onnx" --classes "classes.txt" --examples "Rock Paper Scissors SXSW.v14i.coco/test"
-```
-
-```bash
+# Launch Gradio demo (CPU only)
 pixi run -e cpu gradio-demo
 ```
 
-Train a model
+### 🏋️ Training & Export
 ```bash
+# Train model (CUDA)
 pixi run -e cuda train-model
-```
 
-```bash
+# Train model (CPU)
 pixi run -e cpu train-model
+
+# Export model to ONNX
+pixi run export \
+    --config config.yml \
+    --checkpoint model.pth \
+    --output model.onnx
 ```
 
-Export model to ONNX
-```bash
-pixi run export --config config.yml --checkpoint model.pth --output model.onnx
-```
-
+> [!TIP]
+> For TensorRT inference, set the `LD_LIBRARY_PATH` environment variable:
+> ```bash
+> export LD_LIBRARY_PATH=".pixi/envs/cuda/lib/python3.11/site-packages/tensorrt_libs:$LD_LIBRARY_PATH"
+> ```
 
 ## ⚠️ Disclaimer
 I'm not affiliated with the original DEIM authors. I just found the model interesting and wanted to try it out. The changes made here are of my own. Please cite and star the original repo if you find this useful.
