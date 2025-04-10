@@ -327,7 +327,9 @@ python scripts/gradio_demo.py \
     --classes "classes.txt" \
     --examples "Rock Paper Scissors SXSW.v14i.coco/test"
 ```
-![alt text](assets/gradio_demo.png)
+
+https://github.com/user-attachments/assets/40743c40-36ed-4c61-80ec-a76142a4032b
+
 
 > [!NOTE]
 > The demo app uses onnx model and onnxruntime for inference. Additionally, I have also made it that the ONNX model to accept any input size, despite the original model was trained on 640x640 images. 
