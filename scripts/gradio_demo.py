@@ -283,18 +283,10 @@ def create_bar_data(object_counts):
         return pd.DataFrame({"Class": ["No objects detected"], "Count": [0]})
 
 
-def predict(image, model_path, class_names_path, confidence_threshold, image_size):
+def predict(image, session, class_names_path, confidence_threshold, image_size):
     """Main prediction function."""
     if image is None:
         return None, "Error: No image provided", None
-
-    # Load model
-    model_load_start = time.time()
-    session, error = load_model(model_path)
-    model_load_time = time.time() - model_load_start
-
-    if error:
-        return None, error, None
 
     # Load class names
     class_names = load_class_names(class_names_path)
@@ -335,11 +327,10 @@ def predict(image, model_path, class_names_path, confidence_threshold, image_siz
         # Create status message with timing information
         status_message = create_status_message(object_counts)
         status_message += "\n\nLatency Information:"
-        status_message += f"\n- Model Loading: {model_load_time * 1000:.1f}ms"
         status_message += f"\n- Preprocessing: {preprocess_time * 1000:.1f}ms"
         status_message += f"\n- Inference: {inference_time * 1000:.1f}ms"
         status_message += f"\n- Postprocessing: {postprocess_time * 1000:.1f}ms"
-        status_message += f"\n- Total Time: {(model_load_time + preprocess_time + inference_time + postprocess_time) * 1000:.1f}ms"
+        status_message += f"\n- Total Time: {(preprocess_time + inference_time + postprocess_time) * 1000:.1f}ms"
 
         bar_data = create_bar_data(object_counts)
 
@@ -356,6 +347,11 @@ def build_interface(model_path, class_names_path, example_images=None):
     """
     Build the Gradio interface components.
     """
+    # Load model once at startup
+    session, error = load_model(model_path)
+    if error:
+        raise RuntimeError(f"Failed to load model: {error}")
+    
     with gr.Blocks(title="DEIMKit Detection") as demo:
         gr.Markdown("# DEIMKit Detection")
         gr.Markdown("Upload an image and run inference.")
@@ -406,11 +402,11 @@ def build_interface(model_path, class_names_path, example_images=None):
                 inputs=input_image,
             )
 
-        # Set up the click event
+        # Modify the click event to pass the session
         submit_btn.click(
             fn=lambda img, conf, img_size: predict(
                 img,
-                model_path,
+                session,  # Pass session instead of model_path
                 class_names_path,
                 conf,
                 img_size,
