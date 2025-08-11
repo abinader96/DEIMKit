@@ -2,7 +2,7 @@ import datetime
 import os
 import time
 from pathlib import Path
-from typing import Any, Dict, Union
+from typing import Any, Dict, Union, List, Optional
 
 import torch
 from loguru import logger
@@ -12,6 +12,7 @@ from .engine.misc import dist_utils
 from .engine.optim.lr_scheduler import FlatCosineLRScheduler
 from .engine.solver import TASKS
 from .engine.solver.det_engine import evaluate, train_one_epoch
+from .callbacks import TrainerCallback
 
 
 class Trainer:
@@ -22,14 +23,16 @@ class Trainer:
     DEIM models, abstracting away the complexity of the underlying implementation.
     """
 
-    def __init__(self, config: Config):
+    def __init__(self, config: Config, callbacks: Optional[List[TrainerCallback]] = None):
         """
         Initialize the trainer with a configuration.
 
         Args:
             config: Configuration object containing model and training parameters.
+            callbacks: Optional list of callbacks for training hooks.
         """
         self.config = config
+        self.callbacks = callbacks or []
         self.model = None
         self.optimizer = None
         self.criterion = None
@@ -206,6 +209,7 @@ class Trainer:
     def fit(
         self,
         epochs: int | None = None,
+        patience: int | None = None,
         flat_epoch: int | None = None,
         no_aug_epoch: int | None = None,
         warmup_iter: int | None = None,
@@ -222,6 +226,7 @@ class Trainer:
 
         Args:
             epochs: Number of training epochs. If None, uses config value.
+            patience: Early stopping patience. Stop training if mAP doesn't improve for this many epochs.
             flat_epoch: Number of epochs with flat learning rate. If None, uses config value.
             no_aug_epoch: Number of epochs without augmentation. If None, uses config value.
             warmup_iter: Number of warmup iterations. If None, uses config value.
@@ -232,7 +237,6 @@ class Trainer:
             mixup_epochs: List of two integers that defines the epoch range during which mixup augmentation is active.
                           If None, automatically calculated as [3%, 50%] of total epochs.
             save_best_only: If True, only save the best model checkpoint.
-            pretrained: If True, use pretrained weights for the model.
         """
 
         logger.info("Starting training...")
@@ -366,6 +370,17 @@ class Trainer:
         self.config.yaml_cfg["device"] = str(self.device)
         logger.info(f"Using device: {self.device}")
 
+        # Initialize early stopping tracking
+        if patience is not None:
+            best_map = 0.0
+            best_epoch = 0
+            patience_counter = 0
+            logger.info(f"Early stopping enabled with patience={patience}")
+
+        # Call on_train_begin for all callbacks
+        for callback in self.callbacks:
+            callback.on_train_begin(self)
+
         # Start training
         start_time = time.time()
         start_epoch = self.last_epoch + 1
@@ -461,6 +476,32 @@ class Trainer:
                 global_step=global_step,
             )
 
+            # Call on_epoch_end for all callbacks
+            for callback in self.callbacks:
+                callback.on_epoch_end(self, epoch, train_stats, eval_stats)
+
+            # Early stopping check (built-in)
+            early_stop = False
+            if patience is not None and 'coco_eval_bbox' in eval_stats and len(eval_stats['coco_eval_bbox']) > 0:
+                current_map = eval_stats['coco_eval_bbox'][0]  # mAP@0.50:0.95
+                
+                if epoch == start_epoch:  # First epoch
+                    best_map = current_map
+                    best_epoch = epoch
+                    logger.info(f"Early stopping: Initial mAP@0.50:0.95 = {current_map:.4f}")
+                elif current_map > best_map:
+                    best_map = current_map
+                    best_epoch = epoch
+                    patience_counter = 0
+                    logger.info(f"Early stopping: mAP improved to {current_map:.4f}")
+                else:
+                    patience_counter += 1
+                    logger.info(f"Early stopping: mAP did not improve from {best_map:.4f}. Patience: {patience_counter}/{patience}")
+                    
+                    if patience_counter >= patience:
+                        logger.info(f"Early stopping triggered! Best mAP: {best_map:.4f} at epoch {best_epoch}")
+                        early_stop = True
+
             # Update best stats
             for k in eval_stats:
                 if (
@@ -481,12 +522,16 @@ class Trainer:
                     if best_stats[k] > top1:
                         top1 = best_stats[k]
                         if self.output_dir:
+                            checkpoint_path = self.output_dir / "best.pth"
                             self._save_checkpoint(
-                                epoch, eval_stats, self.output_dir / "best.pth"
+                                epoch, eval_stats, checkpoint_path
                             )
                             logger.info(
                                 f"🏆 NEW BEST MODEL! Epoch {epoch} / mAP: {best_stats[k]}"
                             )
+                            # Call on_checkpoint_save for all callbacks
+                            for callback in self.callbacks:
+                                callback.on_checkpoint_save(self, checkpoint_path, eval_stats)
                 elif k != "coco_eval_bbox":
                     # Handle other metrics
                     if k in best_stats:
@@ -500,20 +545,43 @@ class Trainer:
                     if k != "epoch" and best_stats[k] > top1:
                         top1 = best_stats[k]
                         if self.output_dir:
+                            checkpoint_path = self.output_dir / "best.pth"
                             self._save_checkpoint(
-                                epoch, eval_stats, self.output_dir / "best.pth"
+                                epoch, eval_stats, checkpoint_path
                             )
                             logger.info(
                                 f"🏆 NEW BEST MODEL! Epoch {epoch} / mAP: {best_stats[k]}"
                             )
+                            # Call on_checkpoint_save for all callbacks
+                            for callback in self.callbacks:
+                                callback.on_checkpoint_save(self, checkpoint_path, eval_stats)
 
             logger.info(f"✅ Current best stats: {best_stats}")
 
-        # Save final checkpoint if not save_best_only
+            # Break if early stopping triggered
+            if early_stop:
+                # Save final checkpoint when early stopping
+                if self.output_dir:
+                    final_checkpoint_path = self.output_dir / f"checkpoint_early_stop_epoch{epoch}.pth"
+                    self._save_checkpoint(epoch, eval_stats, final_checkpoint_path)
+                    logger.info(f"Early stopping checkpoint saved to {final_checkpoint_path}")
+                    # Call on_checkpoint_save for all callbacks
+                    for callback in self.callbacks:
+                        callback.on_checkpoint_save(self, final_checkpoint_path, eval_stats)
+                break
+
+        # Save final checkpoint if not save_best_only (and not early stopped)
         if self.output_dir and not save_best_only:
             final_checkpoint_path = self.output_dir / f"checkpoint_final.pth"
-            self._save_checkpoint(num_epochs - 1, eval_stats, final_checkpoint_path)
+            self._save_checkpoint(self.last_epoch, eval_stats, final_checkpoint_path)
             logger.info(f"Final checkpoint saved to {final_checkpoint_path}")
+            # Call on_checkpoint_save for all callbacks
+            for callback in self.callbacks:
+                callback.on_checkpoint_save(self, final_checkpoint_path, eval_stats)
+
+        # Call on_train_end for all callbacks
+        for callback in self.callbacks:
+            callback.on_train_end(self)
 
         # Log training time
         total_time = time.time() - start_time

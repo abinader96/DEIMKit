@@ -7,6 +7,7 @@ from .exporter import Exporter
 from .model import configure_model, list_models
 from .predictor import Predictor, load_model
 from .trainer import Trainer
+from .callbacks import TrainerCallback, MLflowCallback
 from .utils import save_only_ema_weights
 from .visualization import draw_on_image, visualize_detections
 
