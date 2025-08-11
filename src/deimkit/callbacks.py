@@ -7,6 +7,7 @@ from abc import ABC
 from typing import Dict, Any, Optional, List
 from pathlib import Path
 import yaml
+from loguru import logger
 
 try:
     import mlflow
@@ -56,24 +57,23 @@ class MLflowCallback(TrainerCallback):
         self.run = mlflow.start_run(run_name=self.run_name)
         
         # Log all configuration parameters
-        config_dict = trainer.config.__dict__.copy()
+        config_dict = {k: v for k, v in trainer.config.__dict__.items() if not k.startswith("_")}
         
         # Flatten nested configurations for MLflow
         flat_params = self._flatten_dict(config_dict)
         
-        # Log hyperparameters (MLflow has a limit, so we'll log the most important ones)
-        important_params = {
-            k: v for k, v in flat_params.items() 
-            if any(key in k for key in ['epochs', 'batch_size', 'lr', 'optimizer', 'model', 'image_size', 'num_classes', 'patience'])
-            and isinstance(v, (int, float, str, bool))  # Only log simple types
-        }
+        # Trim params with lengths bigger than 500 chars
+        trimmed_params = {}
+
+        for k, v in flat_params.items():
+            if len(str(k)) >= 500:
+                k = k[:500]
+            if len(str(v)) >= 500:
+                v = v[:500]
+            trimmed_params[k] = v
         
-        # Ensure we don't exceed MLflow's parameter limit
-        if len(important_params) > 100:
-            # Sort by key and take first 100
-            important_params = dict(sorted(important_params.items())[:100])
-        
-        mlflow.log_params(important_params)
+        # mlflow.log_params(important_params)
+        mlflow.log_params(trimmed_params, synchronous=False)
         
         # Log the full config as an artifact
         config_path = Path(trainer.output_dir) / "config.yml"
@@ -88,7 +88,7 @@ class MLflowCallback(TrainerCallback):
         
         # Log number of parameters
         n_params = sum(p.numel() for p in trainer.model.parameters() if p.requires_grad)
-        mlflow.log_metric("model_parameters", n_params)
+        # mlflow.log_metric("model_parameters", n_params)
         
         print(f"MLflow run started: {self.run.info.run_id}")
     
@@ -97,7 +97,7 @@ class MLflowCallback(TrainerCallback):
         # Log training metrics
         for key, value in train_stats.items():
             if isinstance(value, (int, float)):
-                mlflow.log_metric(f"train_{key}", value, step=epoch)
+                mlflow.log_metric(f"train_{key}", value, step=epoch, synchronous=False)
         
         # Log evaluation metrics
         if 'coco_eval_bbox' in eval_stats:
@@ -111,7 +111,7 @@ class MLflowCallback(TrainerCallback):
             
             for i, name in enumerate(metric_names):
                 if i < len(bbox_stats):
-                    mlflow.log_metric(f"val_{name}", bbox_stats[i], step=epoch)
+                    mlflow.log_metric(f"val_{name}", bbox_stats[i], step=epoch, synchronous=False)
             
             # Calculate and log F1 scores
             if len(bbox_stats) >= 9:
@@ -177,7 +177,12 @@ class MLflowCallback(TrainerCallback):
             if isinstance(v, dict):
                 items.extend(self._flatten_dict(v, new_key, sep=sep).items())
             elif isinstance(v, (list, tuple)):
-                items.append((new_key, str(v)))
+                for idx, item in enumerate(v):
+                    new_key_arr = f"{new_key}{sep}{idx}"
+                    if isinstance(item, dict):
+                        self._flatten_dict(item, new_key, sep=sep)
+                    else:
+                        items.append((new_key_arr, str(item)))
             elif v is not None and not callable(v):
                 try:
                     # Try to convert to string for logging
